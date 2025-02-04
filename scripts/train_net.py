@@ -142,8 +142,13 @@ optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
 ####     TRAINING LOOP                                                                                                             ####
 #######################################################################################################################################
 
-for epoch in range(10):  # loop over the dataset multiple times
+losses = {'train': [], 'val': []}
+accs = {'train': [], 'val': []}
 
+
+for epoch in range(10):  # loop over the dataset multiple times
+    total = 0
+    correct = 0
     epoch_loss = 0.0
     for i, data in enumerate(trainloader, 0):
         # get the inputs; data is a list of [inputs, labels]
@@ -161,11 +166,28 @@ for epoch in range(10):  # loop over the dataset multiple times
         # print statistics
         epoch_loss += loss.item()
 
+        # the class with the highest energy is what we choose as prediction
+        _, predicted = torch.max(outputs, 1)
+        total += labels.size(0)
+        correct += (predicted == labels).sum().item()
+
+
     print(f'Epoch {epoch + 1} loss: {epoch_loss / len(trainloader)}')
+    losses['train'] += [epoch_loss / len(trainloader)]
+    accs['train'] += [correct / total]
 
 print('Finished Training')
 torch.save(net.state_dict(), 'steer_net.pth')
 
+plt.plot(losses['train'], label='Train Loss')
+plt.xlabel('Epochs')
+plt.ylabel('Loss')
+plt.show()
+
+plt.plot(accs['train'], label='Training Accuracy')
+plt.xlabel('Epochs')
+plt.ylabel('Accuracy')
+plt.show()
 
 #######################################################################################################################################
 ####     PERFORMANCE EVALUATION                                                                                                    ####

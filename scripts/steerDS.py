@@ -14,7 +14,15 @@ class SteerDataSet(Dataset):
         self.img_ext = img_ext        
         self.filenames = glob(path.join(self.root_folder,"*" + self.img_ext))            
         self.totensor = transforms.ToTensor()
-        
+        self.class_labels = [
+            "sharp left",
+            "left",
+            "straight",
+            "right",
+            "sharp right"
+        ]
+
+
     def __len__(self):        
         return len(self.filenames)
     
@@ -28,6 +36,17 @@ class SteerDataSet(Dataset):
             img = self.transform(img)   
         
         steering = f.split("/")[-1].split(self.img_ext)[0][6:]
-        steering = float(steering)        
+        steering = float(steering)
+
+        if steering <= -0.5:
+            steering_cls = 0 # hard left
+        elif steering < 0:
+            steering_cls = 1 # left
+        elif steering == 0:
+            steering_cls = 2 # straight
+        elif steering < 0.5:
+            steering_cls = 3 # right
+        else:
+            steering_cls = 4 # hard right
                       
-        return img, steering
+        return img, steering_cls
